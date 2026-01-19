@@ -1,0 +1,727 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Game Hub</title>
+  <style>
+    :root{
+      --bg:#0b0c11;
+      --panel:#121321cc;
+      --panelSolid:#121321;
+      --text:#eef0ff;
+      --muted:#a8accc;
+      --border:rgba(255,255,255,.08);
+      --accent:#7c3aed;
+      --accent2:#22c55e;
+      --shadow: 0 18px 60px rgba(0,0,0,.55);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(900px 420px at 12% 0%, rgba(124,58,237,.25), transparent 60%),
+        radial-gradient(900px 420px at 88% 10%, rgba(59,130,246,.18), transparent 60%),
+        radial-gradient(1100px 600px at 40% 120%, rgba(34,197,94,.10), transparent 60%),
+        var(--bg);
+      overflow-x:hidden;
+    }
+    a{color:inherit; text-decoration:none}
+    .wrap{max-width:1200px; margin:0 auto; padding:0 16px}
+
+    /* Topbar */
+    .topbar{
+      position:sticky; top:0; z-index:50;
+      background:var(--panel);
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid var(--border);
+    }
+    .topbar-inner{
+      display:flex; align-items:center; gap:14px;
+      padding:12px 0;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      font-weight:800; letter-spacing:.4px;
+      padding-right:10px;
+      border-right:1px solid var(--border);
+    }
+    .logo{
+      width:34px; height:34px; border-radius:12px;
+      background: radial-gradient(circle at 30% 30%, #a78bfa, #7c3aed 55%, #1f123f 100%);
+      box-shadow: 0 10px 30px rgba(124,58,237,.35);
+      border:1px solid rgba(255,255,255,.12);
+    }
+    .nav{
+      display:flex; align-items:center; gap:10px; flex:1;
+      min-width:0;
+    }
+    .nav a{
+      color:var(--muted);
+      font-weight:600;
+      padding:8px 10px;
+      border-radius:12px;
+      transition: .15s ease;
+      white-space:nowrap;
+    }
+    .nav a:hover{color:var(--text); background:rgba(255,255,255,.05)}
+    .nav a.active{color:var(--text); background:rgba(124,58,237,.18); border:1px solid rgba(124,58,237,.28)}
+    .right{
+      display:flex; align-items:center; gap:10px;
+    }
+    .search{
+      display:flex; align-items:center; gap:10px;
+      background: rgba(0,0,0,.25);
+      border:1px solid var(--border);
+      border-radius: 14px;
+      padding:10px 12px;
+      min-width: 260px;
+    }
+    .search input{
+      width:100%;
+      border:0; outline:0;
+      background:transparent;
+      color:var(--text);
+      font-weight:600;
+    }
+    .chip{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:10px 12px;
+      border-radius:14px;
+      background: rgba(255,255,255,.06);
+      border:1px solid var(--border);
+      color:var(--text);
+      font-weight:700;
+      cursor:pointer;
+      user-select:none;
+      transition:.15s ease;
+    }
+    .chip:hover{transform: translateY(-1px); background: rgba(255,255,255,.08)}
+    .chip small{color:var(--muted); font-weight:700}
+
+    /* Hero */
+    .hero{
+      padding:18px 0 6px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:14px;
+    }
+    .heroRow{
+      display:grid;
+      grid-template-columns: 270px 1fr 270px;
+      gap:14px;
+      align-items:stretch;
+    }
+    @media (max-width: 1020px){
+      .heroRow{grid-template-columns:1fr}
+      .search{min-width: 0; width: 220px;}
+    }
+
+    .sidePoster{
+      border-radius: var(--radius);
+      border:1px solid var(--border);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      min-height: 360px;
+      position:relative;
+      background: rgba(0,0,0,.25);
+    }
+    .sidePoster .blur{
+      position:absolute; inset:0;
+      filter: blur(0px);
+      opacity:.9;
+    }
+    .sidePoster .label{
+      position:absolute; left:14px; bottom:14px;
+      background: rgba(0,0,0,.35);
+      border:1px solid var(--border);
+      padding:10px 12px;
+      border-radius:14px;
+      font-weight:800;
+      letter-spacing:.3px;
+    }
+
+    /* Slider */
+    .slider{
+      border-radius: var(--radius);
+      border:1px solid var(--border);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      position:relative;
+      background: rgba(0,0,0,.28);
+      min-height: 360px;
+    }
+    .slides{display:flex; transition: transform .35s ease;}
+    .slide{
+      min-width:100%;
+      display:grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap:16px;
+      padding:18px;
+      align-items:stretch;
+    }
+    @media (max-width: 900px){
+      .slide{grid-template-columns:1fr}
+    }
+    .slide .info{
+      display:flex; flex-direction:column; justify-content:center;
+      padding:6px 8px;
+    }
+    .badge{
+      display:inline-flex; align-items:center; gap:8px;
+      width:max-content;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(124,58,237,.35);
+      background: rgba(124,58,237,.18);
+      font-weight:800;
+      color:var(--text);
+    }
+    .title{
+      font-size: 32px;
+      line-height:1.1;
+      margin:12px 0 8px;
+      letter-spacing:.2px;
+    }
+    .meta{
+      color:var(--muted);
+      font-weight:700;
+      margin-bottom: 14px;
+    }
+    .ctaRow{display:flex; gap:10px; flex-wrap:wrap}
+    .btn{
+      display:inline-flex; align-items:center; gap:10px;
+      padding:11px 14px;
+      border-radius: 14px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.06);
+      font-weight:900;
+      cursor:pointer;
+      transition:.15s ease;
+      user-select:none;
+    }
+    .btn:hover{transform: translateY(-1px); background: rgba(255,255,255,.08)}
+    .btn.primary{
+      background: linear-gradient(135deg, rgba(124,58,237,.95), rgba(59,130,246,.65));
+      border-color: rgba(124,58,237,.35);
+      box-shadow: 0 16px 40px rgba(124,58,237,.22);
+    }
+    .btn.primary:hover{filter:saturate(1.1)}
+    .btn.green{
+      background: linear-gradient(135deg, rgba(34,197,94,.95), rgba(16,185,129,.55));
+      border-color: rgba(34,197,94,.35);
+      box-shadow: 0 16px 40px rgba(34,197,94,.18);
+    }
+
+    .cover{
+      border-radius: 16px;
+      border:1px solid var(--border);
+      overflow:hidden;
+      background: rgba(0,0,0,.25);
+      position:relative;
+      box-shadow: 0 16px 50px rgba(0,0,0,.45);
+      min-height: 320px;
+    }
+    .cover img, .cover svg{
+      width:100%; height:100%;
+      display:block;
+      object-fit:cover;
+    }
+    .cover .shine{
+      position:absolute; inset:-40% -30%;
+      background: linear-gradient(110deg, transparent 20%, rgba(255,255,255,.15) 35%, transparent 50%);
+      transform: rotate(8deg);
+      animation: shine 5.5s ease-in-out infinite;
+      pointer-events:none;
+      opacity:.6;
+    }
+    @keyframes shine{
+      0%{transform: translateX(-35%) rotate(8deg)}
+      50%{transform: translateX(15%) rotate(8deg)}
+      100%{transform: translateX(-35%) rotate(8deg)}
+    }
+
+    .sliderNav{
+      position:absolute; inset:0;
+      display:flex; align-items:center; justify-content:space-between;
+      pointer-events:none;
+    }
+    .navBtn{
+      pointer-events:auto;
+      width:44px; height:44px;
+      border-radius: 14px;
+      background: rgba(0,0,0,.35);
+      border:1px solid var(--border);
+      display:grid; place-items:center;
+      margin: 0 12px;
+      cursor:pointer;
+      transition:.15s ease;
+      user-select:none;
+    }
+    .navBtn:hover{transform: translateY(-1px); background: rgba(0,0,0,.45)}
+
+    /* Sections */
+    .section{
+      margin: 18px 0;
+      padding: 14px;
+      border-radius: var(--radius);
+      border:1px solid var(--border);
+      background: rgba(18,19,33,.55);
+      box-shadow: 0 14px 50px rgba(0,0,0,.35);
+    }
+    .sectionHead{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px;
+      margin-bottom: 12px;
+    }
+    .sectionTitle{
+      display:flex; align-items:center; gap:10px;
+      font-weight:900;
+      letter-spacing:.3px;
+    }
+    .pill{
+      display:inline-flex; align-items:center;
+      padding:6px 10px;
+      border-radius: 999px;
+      background: rgba(124,58,237,.18);
+      border:1px solid rgba(124,58,237,.28);
+      color:var(--text);
+      font-weight:900;
+    }
+    .filters{
+      display:flex; gap:8px; flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    select{
+      background: rgba(0,0,0,.25);
+      border:1px solid var(--border);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius: 14px;
+      font-weight:800;
+      outline:none;
+    }
+
+    /* Cards */
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap:12px;
+    }
+    @media (max-width: 1180px){ .grid{grid-template-columns: repeat(4, 1fr);} }
+    @media (max-width: 920px){ .grid{grid-template-columns: repeat(3, 1fr);} }
+    @media (max-width: 680px){ .grid{grid-template-columns: repeat(2, 1fr);} }
+
+    .card{
+      border-radius: 16px;
+      border:1px solid var(--border);
+      overflow:hidden;
+      background: rgba(0,0,0,.22);
+      transition: .15s ease;
+      cursor:pointer;
+      position:relative;
+    }
+    .card:hover{transform: translateY(-2px); box-shadow: 0 18px 60px rgba(0,0,0,.45)}
+    .thumb{
+      aspect-ratio: 16 / 10;
+      position:relative;
+      overflow:hidden;
+      background: rgba(0,0,0,.25);
+    }
+    .thumb svg{width:100%; height:100%; display:block}
+    .cardBody{
+      padding:10px 10px 12px;
+    }
+    .cardTitle{
+      font-weight:1000;
+      font-size: 14px;
+      line-height:1.2;
+      margin:0 0 6px;
+    }
+    .cardMeta{
+      display:flex; gap:8px; align-items:center; flex-wrap:wrap;
+      color:var(--muted);
+      font-weight:800;
+      font-size: 12px;
+    }
+    .tag{
+      padding:5px 8px;
+      border-radius: 999px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.05);
+    }
+    footer{
+      color:var(--muted);
+      text-align:center;
+      padding:18px 0 26px;
+      font-weight:700;
+    }
+    .hint{opacity:.85}
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="wrap topbar-inner">
+      <div class="brand" title="Game Hub">
+        <div class="logo"></div>
+        <div>Game Hub</div>
+      </div>
+
+      <div class="nav">
+        <a class="active" href="#" id="navHome">Home</a>
+        <a href="#" id="navCategories">Categories</a>
+        <a href="#" id="navTop">Top Games</a>
+        <a href="#" id="navRecent">Recent Updates</a>
+        <a href="#" id="navList">Games List</a>
+        <a href="#" id="navFAQ">FAQ</a>
+        <a href="#" id="navDiscord">Discord</a>
+      </div>
+
+      <div class="right">
+        <div class="search" title="Search games">
+          <span style="opacity:.9">🔎</span>
+          <input id="searchInput" placeholder="Search games..." autocomplete="off" />
+        </div>
+        <div class="chip" id="randomBtn" title="Random game">
+          🎲 <small>Random</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap hero">
+    <div class="heroRow">
+      <div class="sidePoster" id="leftPoster">
+        <div class="blur" id="leftPosterArt"></div>
+        <div class="label">Featured</div>
+      </div>
+
+      <div class="slider" aria-label="Featured slider">
+        <div class="slides" id="slides"></div>
+
+        <div class="sliderNav">
+          <div class="navBtn" id="prevBtn" aria-label="Previous">◀</div>
+          <div class="navBtn" id="nextBtn" aria-label="Next">▶</div>
+        </div>
+      </div>
+
+      <div class="sidePoster" id="rightPoster">
+        <div class="blur" id="rightPosterArt"></div>
+        <div class="label">New</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sectionHead">
+        <div class="sectionTitle">
+          <span class="pill">Recently Added</span>
+          <span class="hint">Your custom list shows here</span>
+        </div>
+
+        <div class="filters">
+          <select id="genreFilter" title="Filter by genre">
+            <option value="All">All Genres</option>
+          </select>
+          <select id="sortFilter" title="Sort">
+            <option value="Recent">Sort: Recent</option>
+            <option value="AZ">Sort: A → Z</option>
+            <option value="ZA">Sort: Z → A</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid" id="grid"></div>
+    </div>
+
+    <footer>
+      <div>Game Hub • clean catalog UI</div>
+      <div class="hint">Tip: edit the <b>games</b> array in the code and refresh.</div>
+    </footer>
+  </div>
+
+<script>
+  // 1) EDIT YOUR GAMES HERE — add/remove anything you want
+  const games = [
+    // Example list (replace with yours)
+    { title: "Grand Theft Auto: San Andreas", genre: "Open World", platform: "PC", year: 2004, featured: true },
+    { title: "Call of Duty: Modern Warfare 2 (2009)", genre: "FPS", platform: "PC", year: 2009, featured: true },
+    { title: "Need for Speed: Most Wanted (2005)", genre: "Racing", platform: "PC", year: 2005, featured: true },
+    { title: "Left 4 Dead 2", genre: "FPS", platform: "PC", year: 2009, featured: true },
+    { title: "The Elder Scrolls V: Skyrim", genre: "RPG", platform: "PC", year: 2011, featured: true },
+
+    { title: "Counter-Strike 1.6", genre: "FPS", platform: "PC", year: 2000, recent: true },
+    { title: "Half-Life 2", genre: "FPS", platform: "PC", year: 2004, recent: true },
+    { title: "Portal 2", genre: "Puzzle", platform: "PC", year: 2011, recent: true },
+    { title: "Terraria", genre: "Indie", platform: "PC", year: 2011, recent: true },
+    { title: "Euro Truck Simulator 2", genre: "Simulation", platform: "PC", year: 2012, recent: true },
+    { title: "Minecraft", genre: "Sandbox", platform: "PC", year: 2011, recent: true },
+    { title: "PES 2013", genre: "Sports", platform: "PC", year: 2012, recent: true },
+    { title: "FIFA 13", genre: "Sports", platform: "PC", year: 2012, recent: true },
+    { title: "Mafia II", genre: "Open World", platform: "PC", year: 2010, recent: true },
+    { title: "Burnout Paradise", genre: "Racing", platform: "PC", year: 2008, recent: true },
+  ];
+
+  // 2) COVER ART GENERATOR (no external images needed)
+  // Creates a nice SVG "cover" based on the game title (deterministic).
+  function hashString(str){
+    let h = 2166136261;
+    for(let i=0;i<str.length;i++){
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+  }
+
+  function hsl(h,s,l){ return `hsl(${h} ${s}% ${l}%)`; }
+
+  function svgCover(title, subtitle){
+    const seed = hashString(title);
+    const h1 = (seed % 360);
+    const h2 = ((seed * 7) % 360);
+    const h3 = ((seed * 13) % 360);
+
+    const g1 = hsl(h1, 86, 55);
+    const g2 = hsl(h2, 86, 50);
+    const g3 = hsl(h3, 86, 52);
+
+    const deco = (seed % 3);
+    const shapeA = deco === 0
+      ? `<circle cx="92" cy="82" r="56" fill="rgba(255,255,255,.10)"/>
+         <circle cx="310" cy="210" r="82" fill="rgba(255,255,255,.08)"/>`
+      : deco === 1
+      ? `<rect x="40" y="40" width="120" height="120" rx="26" fill="rgba(255,255,255,.10)"/>
+         <rect x="250" y="170" width="140" height="140" rx="30" fill="rgba(255,255,255,.08)"/>`
+      : `<path d="M-20 240 C 120 40, 220 440, 420 160" stroke="rgba(255,255,255,.12)" stroke-width="42" fill="none" stroke-linecap="round"/>
+         <path d="M-10 90 C 120 240, 300 0, 430 120" stroke="rgba(255,255,255,.10)" stroke-width="28" fill="none" stroke-linecap="round"/>`;
+
+    const safeTitle = escapeHtml(title);
+    const safeSub = escapeHtml(subtitle || "");
+
+    return `
+      <svg viewBox="0 0 640 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${safeTitle}">
+        <defs>
+          <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="${g1}"/>
+            <stop offset=".55" stop-color="${g2}"/>
+            <stop offset="1" stop-color="${g3}"/>
+          </linearGradient>
+          <linearGradient id="shine" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="rgba(255,255,255,0)"/>
+            <stop offset=".5" stop-color="rgba(255,255,255,.25)"/>
+            <stop offset="1" stop-color="rgba(255,255,255,0)"/>
+          </linearGradient>
+          <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="10"/>
+          </filter>
+        </defs>
+
+        <rect width="640" height="400" fill="url(#bg)"/>
+        <g filter="url(#soft)">
+          ${shapeA}
+          <circle cx="520" cy="70" r="44" fill="rgba(0,0,0,.22)"/>
+          <circle cx="530" cy="80" r="22" fill="rgba(255,255,255,.10)"/>
+        </g>
+
+        <rect x="0" y="270" width="640" height="130" fill="rgba(0,0,0,.30)"/>
+        <rect x="-120" y="0" width="220" height="440" fill="rgba(0,0,0,.18)"/>
+        <rect x="520" y="-80" width="220" height="520" fill="rgba(255,255,255,.06)"/>
+
+        <text x="22" y="310" fill="rgba(255,255,255,.96)" font-size="30" font-weight="900"
+              font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif">
+          ${truncate(safeTitle, 26)}
+        </text>
+
+        <text x="22" y="346" fill="rgba(255,255,255,.82)" font-size="18" font-weight="800"
+              font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif">
+          ${safeSub}
+        </text>
+
+        <rect x="22" y="366" width="146" height="18" rx="9" fill="rgba(0,0,0,.28)" stroke="rgba(255,255,255,.18)"/>
+        <text x="34" y="380" fill="rgba(255,255,255,.88)" font-size="12" font-weight="900"
+              font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif">
+          PC • Catalog
+        </text>
+
+        <rect x="-200" y="0" width="260" height="400" fill="url(#shine)" opacity=".35">
+          <animate attributeName="x" from="-200" to="700" dur="5.5s" repeatCount="indefinite"/>
+        </rect>
+      </svg>
+    `;
+  }
+
+  function escapeHtml(str){
+    return (str || "").replace(/[&<>"']/g, (m) => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[m]));
+  }
+
+  function truncate(str, max){
+    if(!str) return "";
+    return str.length > max ? str.slice(0, max - 1) + "…" : str;
+  }
+
+  // UI
+  const gridEl = document.getElementById("grid");
+  const slidesEl = document.getElementById("slides");
+  const searchInput = document.getElementById("searchInput");
+  const genreFilter = document.getElementById("genreFilter");
+  const sortFilter = document.getElementById("sortFilter");
+  const randomBtn = document.getElementById("randomBtn");
+
+  const leftPosterArt = document.getElementById("leftPosterArt");
+  const rightPosterArt = document.getElementById("rightPosterArt");
+
+  let slideIndex = 0;
+
+  function uniqueGenres(list){
+    const set = new Set(list.map(g => g.genre));
+    return ["All", ...Array.from(set).sort((a,b)=>a.localeCompare(b))];
+  }
+
+  function fillGenreFilter(){
+    const genres = uniqueGenres(games);
+    genreFilter.innerHTML = genres.map(g => `<option value="${g}">${g === "All" ? "All Genres" : g}</option>`).join("");
+  }
+
+  function getFiltered(){
+    const q = (searchInput.value || "").trim().toLowerCase();
+    const genre = genreFilter.value || "All";
+    let list = games.slice();
+
+    if(genre !== "All"){
+      list = list.filter(g => g.genre === genre);
+    }
+    if(q){
+      list = list.filter(g => g.title.toLowerCase().includes(q));
+    }
+
+    const sort = sortFilter.value;
+    if(sort === "AZ"){
+      list.sort((a,b)=>a.title.localeCompare(b.title));
+    } else if(sort === "ZA"){
+      list.sort((a,b)=>b.title.localeCompare(a.title));
+    } else {
+      // Recent: show recent first, fallback by year desc
+      list.sort((a,b)=>{
+        const ar = !!a.recent, br = !!b.recent;
+        if(ar !== br) return br - ar;
+        return (b.year||0) - (a.year||0);
+      });
+    }
+    return list;
+  }
+
+  function renderGrid(){
+    const list = getFiltered();
+    gridEl.innerHTML = list.map((g, idx) => {
+      const sub = `${g.genre} • ${g.platform}${g.year ? " • " + g.year : ""}`;
+      return `
+        <div class="card" data-idx="${idx}">
+          <div class="thumb">${svgCover(g.title, sub)}</div>
+          <div class="cardBody">
+            <div class="cardTitle">${escapeHtml(g.title)}</div>
+            <div class="cardMeta">
+              <span class="tag">${escapeHtml(g.genre)}</span>
+              <span class="tag">${escapeHtml(g.platform)}</span>
+              ${g.year ? `<span class="tag">${g.year}</span>` : ""}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    // click -> quick details popup
+    gridEl.querySelectorAll(".card").forEach(card=>{
+      card.addEventListener("click", ()=>{
+        const i = Number(card.getAttribute("data-idx"));
+        const list2 = getFiltered();
+        const g = list2[i];
+        alert(`${g.title}\n\nGenre: ${g.genre}\nPlatform: ${g.platform}\nYear: ${g.year || "—"}\n\nTip: You can replace this alert with a real details page later.`);
+      });
+    });
+  }
+
+  function featuredList(){
+    const feat = games.filter(g => g.featured);
+    return feat.length ? feat : games.slice(0, Math.min(5, games.length));
+  }
+
+  function renderSlider(){
+    const feat = featuredList();
+    slidesEl.innerHTML = feat.map((g)=>{
+      const sub = `${g.genre} • ${g.platform}${g.year ? " • " + g.year : ""}`;
+      return `
+        <div class="slide">
+          <div class="info">
+            <div class="badge">★ Featured</div>
+            <div class="title">${escapeHtml(g.title)}</div>
+            <div class="meta">${escapeHtml(sub)}</div>
+            <div class="ctaRow">
+              <div class="btn primary" onclick="alert('You can link to Steam / Official site here.')">View Details</div>
+              <div class="btn green" onclick="alert('You can add trailers or screenshots here.')">Trailer</div>
+              <div class="btn" onclick="navigator.clipboard?.writeText('${escapeHtml(g.title)}')">Copy Name</div>
+            </div>
+          </div>
+          <div class="cover">
+            ${svgCover(g.title, "Featured")}
+            <div class="shine"></div>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    slideIndex = 0;
+    updateSlider();
+  }
+
+  function updateSlider(){
+    const feat = featuredList();
+    if(!feat.length) return;
+    if(slideIndex < 0) slideIndex = feat.length - 1;
+    if(slideIndex >= feat.length) slideIndex = 0;
+    slidesEl.style.transform = `translateX(-${slideIndex * 100}%)`;
+
+    // side posters: choose two different ones if possible
+    const left = feat[(slideIndex + 1) % feat.length] || feat[0];
+    const right = feat[(slideIndex + 2) % feat.length] || feat[0];
+
+    leftPosterArt.innerHTML = svgCover(left.title, "Featured");
+    rightPosterArt.innerHTML = svgCover(right.title, "New");
+  }
+
+  document.getElementById("prevBtn").addEventListener("click", ()=>{ slideIndex--; updateSlider(); });
+  document.getElementById("nextBtn").addEventListener("click", ()=>{ slideIndex++; updateSlider(); });
+
+  let autoTimer = setInterval(()=>{ slideIndex++; updateSlider(); }, 4500);
+  function resetAuto(){
+    clearInterval(autoTimer);
+    autoTimer = setInterval(()=>{ slideIndex++; updateSlider(); }, 4500);
+  }
+  document.getElementById("prevBtn").addEventListener("click", resetAuto);
+  document.getElementById("nextBtn").addEventListener("click", resetAuto);
+
+  // Search / filters
+  searchInput.addEventListener("input", renderGrid);
+  genreFilter.addEventListener("change", renderGrid);
+  sortFilter.addEventListener("change", renderGrid);
+
+  // Random
+  randomBtn.addEventListener("click", ()=>{
+    const list = getFiltered();
+    if(!list.length) return;
+    const g = list[Math.floor(Math.random() * list.length)];
+    alert(`Random pick:\n\n${g.title}\n${g.genre} • ${g.platform} • ${g.year || "—"}`);
+  });
+
+  // Init
+  fillGenreFilter();
+  renderSlider();
+  renderGrid();
+</script>
+</body>
+</html>
